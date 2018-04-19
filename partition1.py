@@ -2,6 +2,10 @@ import matplotlib.pyplot as plt
 import copy
 import re
 
+# PARAMETERS #
+# OVERLAP PERCENTAGE : 0.2
+# DIFFERENCE IN POPULATION RATIO : 0.15 
+
 # Point input and visualization phase.
 fp = open('input.txt', 'r')
 data = fp.read()
@@ -141,7 +145,7 @@ def create_jurisdiction_areas(_generation):
 			if l_v1 == 1 or l_v2 == 1:
 				continue
 			inter = val1 & val2
-			if( (float(len(inter)) / min(l_v1, l_v2) ) > 0.3): #overlap percentage.
+			if( (float(len(inter)) / min(l_v1, l_v2) ) > 0.2): #overlap percentage.
 				if abs(point_neighbor_ratio[key1] - point_neighbor_ratio[key2]) < 0.15: # Similar region
 					is_used[key1] = True
 					is_used[key2] = True
@@ -153,13 +157,30 @@ def create_jurisdiction_areas(_generation):
 			aggregation[key1] = val1
 	return aggregation
 
+def prune_duplicates(generation):
+	to_delete = []
+	keys = generation.keys()
+	for i in range(len(keys)):
+		for j in range(i+1, len(keys)):
+			if set(generation[keys[i]]) == set(generation[keys[j]]):
+				to_delete.append(keys[j])
+	to_delete = list(set(to_delete))
+	for key in to_delete:
+		del generation[key]
+				
+
 for key in generation:
 	is_used[key] = False
 old_areas = 0
 new_areas = len(generation)
-for i in range(4):
-	print_neighborhood(generation)
-	print(old_areas, new_areas)
+for i in range(6):
+#	print(old_areas, new_areas)
+	prune_duplicates(generation)
+#	print_neighborhood(generation)
 	generation = create_jurisdiction_areas(generation) 
 	old_areas = new_areas
 	new_areas = len(generation)
+
+#print(old_areas, new_areas)
+prune_duplicates(generation)
+print_neighborhood(generation)
