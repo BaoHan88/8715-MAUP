@@ -113,18 +113,25 @@ def destringify_point(str_point):
 	return (x_y[0], x_y[1])
 
 count = 0;
+is_used = {}
 #Neighborghood aggregation to create jurisdiction areas.
 def create_jurisdiction_areas(_generation):
 	global count
 	pattern = re.compile("ja[0-9]+")
 	aggregation = {}
-	for key1 in _generation:
+	keys = _generation.keys()
+	for i in range(len(keys)):
+		key1 = keys[i]
 		val1 = set(_generation[key1])
 		if not pattern.search(key1):
 			val1.add(destringify_point(key1))
 		l_v1 = len(val1)
-		is_used = False
-		for key2 in _generation:
+		if not key1 in is_used:
+			is_used[key1] = False
+		for j in range(i+1, len(keys)):
+			key2 = keys[j]
+			if not key1 in is_used:
+				is_used[key2] = False
 			if key1 == key2:
 				continue
 			val2 = set(_generation[key2])
@@ -136,18 +143,21 @@ def create_jurisdiction_areas(_generation):
 			inter = val1 & val2
 			if( (float(len(inter)) / min(l_v1, l_v2) ) > 0.3): #overlap percentage.
 				if abs(point_neighbor_ratio[key1] - point_neighbor_ratio[key2]) < 0.15: # Similar region
-					is_used = True
+					is_used[key1] = True
+					is_used[key2] = True
 					_key = 'ja' + str(count)
 					aggregation[_key] = val1 | val2
 					point_neighbor_ratio[_key] = (point_neighbor_ratio[key1] * l_v1 + point_neighbor_ratio[key2] * l_v2) / (l_v1 + l_v2 - len(inter))
 					count += 1
-		if not is_used and l_v1 > 1:
+		if not is_used[key1] and l_v1 > 1:
 			aggregation[key1] = val1
 	return aggregation
-				
+
+for key in generation:
+	is_used[key] = False
 old_areas = 0
 new_areas = len(generation)
-for i in range(3):
+for i in range(4):
 	print_neighborhood(generation)
 	print(old_areas, new_areas)
 	generation = create_jurisdiction_areas(generation) 
