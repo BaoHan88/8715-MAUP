@@ -1,13 +1,21 @@
+#
+# Code for Spatial Partitioning.
+# Author: Jayant Gupta
+# 04/18/2018
+#
+
 import matplotlib.pyplot as plt
 import copy
 import re
+from scipy.spatial import ConvexHull
+import numpy as np
 
 # PARAMETERS #
 # OVERLAP PERCENTAGE : 0.2
 # DIFFERENCE IN POPULATION RATIO : 0.15 
 
 # Point input and visualization phase.
-fp = open('input.txt', 'r')
+fp = open('input1.txt', 'r')
 data = fp.read()
 lines = data.split('\n')
 
@@ -92,13 +100,14 @@ for i in range(len(X)):
 						generation[key].append((x-j, y-k))
 						Q.append((x-j, y-k))
 
-
 # Removing Duplicates.
 for key in generation:
 	val = generation[key]
 	generation[key] = list(set(val))
 
 def print_neighborhood(generation):
+#	for line in generation:
+#		print line, generation[line]
 	print "NEIGHBORHOOD GENERATION"
 	for key in generation:
 		val = generation[key]
@@ -112,9 +121,27 @@ def print_neighborhood(generation):
 				print(row)
 			print("-----------XXX----------")
 
+
+def plot_neighborhood(generation):
+	for line in generation:
+		points = np.array(list(generation[line]))
+		hull = ConvexHull(points)
+		plt.plot(points[:,0], points[:,1], 'o')
+		for simplex in hull.simplices:
+			plt.plot(points[simplex, 0], points[simplex, 1], 'k-')
+		plt.plot(points[hull.vertices,0], points[hull.vertices,1], 'r--', lw=2)
+		plt.plot(points[hull.vertices[0],0], points[hull.vertices[0],1], 'o')
+#	plt.axes([0.85, 0.1, 0.85, 0.1])
+	plt.xlim(0,ncol)
+	plt.ylim(0,nrow)
+	for i in range(len(X)):
+		plt.plot(X[i], Y[i], 'bs')
+	plt.show()
+		
+
 def destringify_point(str_point):
 	x_y = str_point.split('_')
-	return (x_y[0], x_y[1])
+	return (int(x_y[0]), int(x_y[1]))
 
 count = 0;
 is_used = {}
@@ -168,7 +195,6 @@ def prune_duplicates(generation):
 	for key in to_delete:
 		del generation[key]
 				
-
 for key in generation:
 	is_used[key] = False
 old_areas = 0
@@ -183,4 +209,5 @@ for i in range(6):
 
 #print(old_areas, new_areas)
 prune_duplicates(generation)
-print_neighborhood(generation)
+#print_neighborhood(generation)
+plot_neighborhood(generation)
